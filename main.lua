@@ -185,7 +185,6 @@ ne.responder['resize'] = function(self)
 			player.geo.refRight = player.geo.width - 20
 			player.geo.refWidth = player.geo.refRight - player.geo.refLeft
 		end
-		print(player.geo.refWidth)
 		player.geo.refY = player.geo.height * (1 - opts.boxPosRatio) - opts.boxHeight
 		if player.geo.refY < 0 then player.geo.refY = 0 end
 		player.geo.refY2 = player.geo.refY + 35
