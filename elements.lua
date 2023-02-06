@@ -217,7 +217,10 @@ ne.responder['mouse_leave'] = function(self)
     
 -- slider
 ne = newElement('slider')
-ne.handleSize = 10
+ne.handleSize = 10	-- handle circle radius
+ne.handleFade = 'out'	-- in, out, stop
+ne.handleFadeStep = 5	-- fade in/out max steps
+ne.handleTrans = ne.handleFadeStep	-- handle transparency modifier
 ne.geo.bar = {}		-- will be flushed by setParam
 ne.geo.handle = {}  -- will be flushed by setParam
 ne.value = 0        -- 0~100
@@ -229,6 +232,7 @@ ne.style1 = nil		-- forground style
 ne.style2 = nil		-- background style
 ne.style3 = nil		-- handle style
 ne.active = false
+ne.activeLastTick = false
 ne.hitBox = {}
 ne.markers = {}
 -- get corresponding slider value at a position
@@ -286,8 +290,8 @@ ne.setAlpha = function(self, trans)
 		self.pack[2] = getAlpha(self.style2, trans)
 		-- fg
 		self.pack[6] = getAlpha(self.style1, trans)
-		-- handle
-		self.pack[10] = getAlpha(self.style3, trans)
+		-- handle alpha is dealt with in tick() function
+		-- self.pack[10] = getAlpha(self.style3, self.trans)
 	end
 ne.setStyle = function(self)
 		self:setAlpha(self.trans)
@@ -299,12 +303,11 @@ ne.setStyle = function(self)
 		self.pack[11] = getStyle(self.style3)
 	end
 ne.render = function(self)
-		-- render bg
+		-- render background/bg
         local ass = assdraw.ass_new()
         local w, h, r = self.geo.bar.w, self.geo.bar.h, self.geo.bar.h/2
         ass:draw_start()
         assDrawRoundRectCW(ass, -r, 0, w+r, h, r, r)
-        --assDrawRoundRectCCW(ass, -r+1, 1, w+r-1, h-1, r-1, r-1)
         -- markers in bg
         for i, v in ipairs(self.markers) do
 			local x, y = v * self.xLength, self.geo.h/2
@@ -324,7 +327,7 @@ ne.render = function(self)
     end
 ne.render2 = function(self)
         local ass = assdraw.ass_new()
-        -- render fg
+        -- render foreground/fg
         local x, h, r = self.xValue, self.geo.bar.h, self.geo.bar.h/2
         ass:draw_start()
 		assDrawRoundRectCW(ass, -r, 0, x+r, h, r ,r)
@@ -337,12 +340,36 @@ ne.render2 = function(self)
 		ass:draw_stop()
 		ass:new_event()
 		self.pack[8] = ass.text
-		-- show handle on mouse over
-		if self.active then
-			self.geo.handle.x = self.xMin + self.xValue
-		else
-			self.geo.handle.x = -100
-		end
+		-- set handle pos
+		self.geo.handle.x = self.xMin + self.xValue
 		self.pack[9] = getPos(self.geo.handle)
 	end
+ne.tick = function(self)
+		if not self.visible then return '' end
+		if self.active and not self.activeLastTick then
+			self.handleFade = 'in'
+		elseif not self.active and self.activeLastTick then
+			self.handleFade = 'out'
+		end
+		self.activeLastTick = self.active
+		if self.handleFade == 'out' then
+			self.handleTrans = self.handleTrans + 1
+			if self.handleTrans >= self.handleFadeStep then
+				self.handleTrans = self.handleFadeStep
+				self.handleFade = 'stop'
+			end
+			self.pack[10] = getAlpha(self.style3, self.handleTrans/self.handleFadeStep)
+		elseif self.handleFade == 'in' then
+			self.handleTrans = self.handleTrans - 1
+			if self.handleTrans <= 0 then
+				self.handleTrans = 0
+				self.handleFade = 'stop'
+			end
+			self.pack[10] = getAlpha(self.style3, self.handleTrans/self.handleFadeStep)
+		end
+		return table.concat(self.pack)
+	end
 ne.isInside = isInside
+ne.responder['mouse_leave'] = function(self)
+		self.active = false
+	end

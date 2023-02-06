@@ -9,11 +9,11 @@ mp.commandv('set', 'osc', 'no')
 
 -- user options
 opts = {
-    scale = 1,              -- osc render scale
+    scale = 2,              -- osc render scale
     fixedHeight = false,    -- true to allow osc scale with window
     hideTimeout = 1,        -- seconds untile osc hides, negative means never
     fadeDuration = 0.5,     -- seconds during fade out, negative means never
-	boxPosRatio = 0.25,		-- box space ratio from bottom
+	boxPosRatio = 0.3,		-- box space ratio from bottom
 	boxWidth = 450,			-- 
 	boxHeight = 50,			--
     }
@@ -185,10 +185,10 @@ ne.responder['resize'] = function(self)
 			player.geo.refRight = player.geo.width - 20
 			player.geo.refWidth = player.geo.refRight - player.geo.refLeft
 		end
-		player.geo.refY = player.geo.height * (1 - opts.boxPosRatio) - opts.boxHeight
+		player.geo.refY = player.geo.height * (1 - opts.boxPosRatio) - opts.boxHeight / 2
 		if player.geo.refY < 0 then player.geo.refY = 0 end
 		player.geo.refY2 = player.geo.refY + 35
-        setPlayActiveArea('area1', 0, player.geo.refY-100, player.geo.width, player.geo.height, 'show_hide')
+        setPlayActiveArea('area1', 0, player.geo.refY-100, player.geo.width, player.geo.refY+opts.boxHeight+100, 'show_hide')
         setPlayActiveArea('area2', player.geo.refLeft, player.geo.refY, player.geo.refRight, player.geo.refY+opts.boxHeight)
         setPlayActiveArea('area3', player.geo.width-150, 0, player.geo.width, 24)
         return false
@@ -361,6 +361,7 @@ ne.responder['mouse_move'] = function(self, pos)
         local seekTo = self:getValueAt(pos)
         if self.allowDrag then
             mp.commandv('seek', seekTo, 'absolute-percent')
+            self.active = true
         end
         if self:isInside(pos) then
             local tipText
@@ -393,7 +394,7 @@ ne.responder['mouse_move'] = function(self, pos)
             tooltip:show(tipText, {pos[1], self.geo.y}, self)
             self.active = true
             return true
-        else
+        elseif not self.allowDrag then
             tooltip:hide(self)
             self.active = false
             return false
@@ -455,6 +456,7 @@ ne.responder['mouse_move'] = function(self, pos)
         local vol = self:getValueAt(pos)
         if self.allowDrag and vol then
 			mp.commandv('set', 'volume', vol*1.4)
+			self.active = true
         end
         if self:isInside(pos) then
             local tipText
@@ -463,14 +465,12 @@ ne.responder['mouse_move'] = function(self, pos)
             else
                 tipText = 'N/A'
             end
-            tooltip:show(tipText, {pos[1], self.geo.y}, self)
+            -- tooltip:show(tipText, {pos[1], self.geo.y}, self)
             self.active = true
-            self:render2()
             return true
-        else
-            tooltip:hide(self)
+        elseif not self.allowDrag then
+            -- tooltip:hide(self)
             self.active = false
-            self:render2()
             return false
         end
     end
