@@ -1,6 +1,6 @@
 -- mpv-osc-simple
 -- by maoiscat
--- github/maoiscat/mpv-osc-simple
+-- github/maoiscat/mpv-osc-simple-box
 
 require 'elements'
 local assdraw = require 'mp.assdraw'
