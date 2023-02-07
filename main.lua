@@ -9,13 +9,13 @@ mp.commandv('set', 'osc', 'no')
 
 -- user options
 opts = {
-    scale = 2,              -- osc render scale
+    scale = 1,              -- osc render scale
     fixedHeight = false,    -- true to allow osc scale with window
     hideTimeout = 1,        -- seconds untile osc hides, negative means never
     fadeDuration = 0.5,     -- seconds during fade out, negative means never
-	boxPosRatio = 0.3,		-- box space ratio from bottom
-	boxWidth = 450,			-- 
-	boxHeight = 50,			--
+    boxPosRatio = 0.3,		-- box space ratio from bottom
+    boxWidth = 450,			-- 
+    boxHeight = 50,			--
     }
 
 -- styles
